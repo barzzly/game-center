@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ular Tangga vs Bot</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            color: #FFD700;
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-btn:hover {
+            background-color: rgba(0, 0, 0, 0.5);
+            transform: translateX(-5px);
+        }
+        
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .left-panel, .right-panel {
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+        }
+        
+        .center-panel {
+            flex: 2;
+            min-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .game-info {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .player-info {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .player-info.active {
+            background-color: rgba(255, 215, 0, 0.2);
+            border: 2px solid #FFD700;
+            transform: scale(1.02);
+        }
+        
+        .player-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .player-position {
+            font-size: 1.2rem;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #auto-play {
+            background-color: #2196F3;
+        }
+        
+        #auto-play:hover:not(:disabled) {
+            background-color: #0b7dda;
+        }
+        
+        .dice-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            width: 100%;
+        }
+        
+        .dice {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.5s ease;
+        }
+        
+        .dice.rolling {
+            animation: rollDice 0.5s ease-in-out 3;
+        }
+        
+        @keyframes rollDice {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        .game-board-container {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 2px;
+            width: 550px;
+            height: 550px;
+            background-color: #8B4513;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        .cell {
+            background-color: #DEB887;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: #333;
+            position: relative;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+        
+        .cell.ladder {
+            background-color: #98FB98;
+        }
+        
+        .cell.snake {
+            background-color: #FF7F7F;
+        }
+        
+        .cell-number {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .player-piece {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+            transition: all 0.5s ease;
+        }
+        
+        .player-1 {
+            background-color: #FF4500;
+            border: 2px solid #FF0000;
+            top: 5px;
+            left: 5px;
+        }
+        
+        .player-2 {
+            background-color: #1E90FF;
+            border: 2px solid #0000FF;
+            bottom: 5px;
+            right: 5px;
+        }
+        
+        .ladder-icon, .snake-icon {
+            position: absolute;
+            font-size: 1.8rem;
+            z-index: 1;
+        }
+        
+        .ladder-icon {
+            color: #228B22;
+        }
+        
+        .snake-icon {
+            color: #8B0000;
+        }
+        
+        .game-log {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 15px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .log-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #FFD700;
+            font-size: 1.2rem;
+        }
+        
+        .log-entries {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .log-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.95rem;
+        }
+        
+        .log-player-1 {
+            color: #FF4500;
+        }
+        
+        .log-player-2 {
+            color: #1E90FF;
+        }
+        
+        .instructions {
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .win-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.7);
+            z-index: 100;
+            display: none;
+            animation: fadeIn 0.5s ease;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .win-message h2 {
+            color: #FFD700;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .left-panel, .right-panel, .center-panel {
+                width: 100%;
+                max-width: 800px;
+            }
+            
+            .center-panel {
+                order: 1;
+            }
+            
+            .left-panel {
+                order: 2;
+            }
+            
+            .right-panel {
+                order: 3;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .game-board {
+                width: 95vw;
+                height: 95vw;
+                max-width: 500px;
+                max-height: 500px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .back-btn {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin-bottom: 20px;
+            }
+            
+            .header-container {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <button class="back-btn" onclick="goHome()">← Kembali ke Home</button>
+        <h1>ULAR TANGGA vs BOT</h1>
+        <p>Mainkan giliran Anda, lalu biarkan bot bermain dengan sendirinya!</p>
+    </div>
+    
+    <div class="main-container">
+        <!-- Panel Kiri: Info Pemain & Kontrol -->
+        <div class="left-panel">
+            <div class="game-info">
+                <div class="player-info active" id="player1-info">
+                    <div class="player-name">Player 1 (Anda)</div>
+                    <div class="player-position">Posisi: <span id="player1-pos">1</span></div>
+                </div>
+                <div class="player-info" id="player2-info">
+                    <div class="player-name">Player 2 (Bot)</div>
+                    <div class="player-position">Posisi: <span id="player2-pos">1</span></div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="roll-dice">🎲 Lempar Dadu</button>
+                <button id="reset-game">🔄 Mulai Ulang</button>
+                <button id="auto-play">⚡ Auto Play</button>
+            </div>
+            
+            <div class="dice-container">
+                <div class="dice" id="dice">?</div>
+                <div id="dice-result">Klik "Lempar Dadu" untuk memulai!</div>
+            </div>
+            
+            <div class="instructions">
+                <h3>Cara Bermain:</h3>
+                <ul>
+                    <li>Klik "Lempar Dadu" untuk memulai giliran Anda</li>
+                    <li>Setelah Anda selesai, bot akan otomatis melempar dadu</li>
+                    <li>Jika mendarat di <span style="color:#98FB98">tangga (hijau)</span>, naik ke kotak lebih tinggi</li>
+                    <li>Jika mendarat di <span style="color:#FF7F7F">ular (merah)</span>, turun ke kotak lebih rendah</li>
+                    <li>Pemain pertama yang mencapai kotak 100 adalah pemenang!</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Panel Tengah: Papan Permainan -->
+        <div class="center-panel">
+            <div class="game-board-container">
+                <div class="game-board" id="game-board">
+                    <!-- Papan permainan akan di-generate dengan JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel Kanan: Log Permainan -->
+        <div class="right-panel">
+            <div class="game-log">
+                <div class="log-title">📜 Log Permainan:</div>
+                <div class="log-entries" id="log-entries"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="win-message" id="win-message">
+        <h2 id="winner-text"></h2>
+        <button id="play-again">Main Lagi</button>
+        <button onclick="goHome()" style="margin-top: 10px; background-color: #666;">Kembali ke Home</button>
+    </div>
+    
+    <script>
+        // Konfigurasi permainan
+        const config = {
+            boardSize: 100,
+            players: [
+                { id: 1, name: "Player 1 (Anda)", position: 1, color: "#FF4500", isBot: false },
+                { id: 2, name: "Player 2 (Bot)", position: 1, color: "#1E90FF", isBot: true }
+            ],
+            currentPlayer: 0,
+            gameActive: true,
+            autoPlay: false,
+            autoPlaySpeed: 1500,
+            logEntries: []
+        };
+
+        // Posisi tangga dan ular
+        const snakesAndLadders = {
+            // Tangga (dari -> ke)
+            ladders: {
+                3: 22, 5: 8, 11: 26, 20: 29, 17: 4, 19: 7, 27: 1, 21: 9
+            },
+            // Ular (dari -> ke)
+            snakes: {
+                16: 6, 47: 26, 49: 11, 56: 53, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 98: 78
+            }
+        };
+
+        // Elemen DOM
+        const gameBoard = document.getElementById('game-board');
+        const rollDiceBtn = document.getElementById('roll-dice');
+        const resetGameBtn = document.getElementById('reset-game');
+        const autoPlayBtn = document.getElementById('auto-play');
+        const playAgainBtn = document.getElementById('play-again');
+        const winMessage = document.getElementById('win-message');
+        const winnerText = document.getElementById('winner-text');
+        const diceElement = document.getElementById('dice');
+        const diceResultElement = document.getElementById('dice-result');
+        const logEntriesElement = document.getElementById('log-entries');
+        const player1PosElement = document.getElementById('player1-pos');
+        const player2PosElement = document.getElementById('player2-pos');
+        const player1InfoElement = document.getElementById('player1-info');
+        const player2InfoElement = document.getElementById('player2-info');
+
+        // Fungsi kembali ke home
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        // Inisialisasi permainan
+        function initGame() {
+            config.players[0].position = 1;
+            config.players[1].position = 1;
+            config.currentPlayer = 0;
+            config.gameActive = true;
+            config.logEntries = [];
+            config.autoPlay = false;
+            
+            updatePlayerInfo();
+            generateBoard();
+            updatePlayerPieces();
+            updateGameLog("🎮 Permainan dimulai! Player 1 memulai.");
+            updateActivePlayer();
+            
+            // Reset UI
+            winMessage.style.display = 'none';
+            rollDiceBtn.disabled = false;
+            autoPlayBtn.textContent = '⚡ Auto Play';
+            diceElement.textContent = '?';
+            diceElement.classList.remove('rolling');
+            diceResultElement.textContent = 'Klik "Lempar Dadu" untuk memulai!';
+        }
+
+        // Generate papan permainan
+        function generateBoard() {
+            gameBoard.innerHTML = '';
+            
+            for (let i = 1; i <= config.boardSize; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.id = `cell-${i}`;
+                
+                // Tambahkan nomor sel
+                const cellNumber = document.createElement('div');
+                cellNumber.classList.add('cell-number');
+                cellNumber.textContent = i;
+                cell.appendChild(cellNumber);
+                
+                // Tandai sel dengan tangga
+                if (snakesAndLadders.ladders[i]) {
+                    cell.classList.add('ladder');
+                    const ladderIcon = document.createElement('div');
+                    ladderIcon.classList.add('ladder-icon');
+                    ladderIcon.textContent = '🪜';
+                    cell.appendChild(ladderIcon);
+                }
+                
+                // Tandai sel dengan ular
+                if (snakesAndLadders.snakes[i]) {
+                    cell.classList.add('snake');
+                    const snakeIcon = document.createElement('div');
+                    snakeIcon.classList.add('snake-icon');
+                    snakeIcon.textContent = '🐍';
+                    cell.appendChild(snakeIcon);
+                }
+                
+                gameBoard.appendChild(cell);
+            }
+            
+            // Atur urutan sel zig-zag
+            const cells = gameBoard.querySelectorAll('.cell');
+            for (let i = 0; i < cells.length; i++) {
+                const row = Math.floor(i / 10);
+                const col = i % 10;
+                
+                // Baris genap (dari kanan ke kiri)
+                if (row % 2 === 1) {
+                    cells[i].style.gridColumn = `${10 - col}`;
+                } else {
+                    cells[i].style.gridColumn = `${col + 1}`;
+                }
+                
+                cells[i].style.gridRow = `${10 - row}`;
+            }
+        }
+
+        // Update posisi pemain di papan
+        function updatePlayerPieces() {
+            document.querySelectorAll('.player-piece').forEach(piece => piece.remove());
+            
+            config.players.forEach(player => {
+                const cell = document.getElementById(`cell-${player.position}`);
+                if (cell) {
+                    const piece = document.createElement('div');
+                    piece.classList.add('player-piece', `player-${player.id}`);
+                    piece.style.backgroundColor = player.color;
+                    cell.appendChild(piece);
+                }
+            });
+        }
+
+        // Update info pemain
+        function updatePlayerInfo() {
+            player1PosElement.textContent = config.players[0].position;
+            player2PosElement.textContent = config.players[1].position;
+        }
+
+        // Update pemain aktif
+        function updateActivePlayer() {
+            if (config.currentPlayer === 0) {
+                player1InfoElement.classList.add('active');
+                player2InfoElement.classList.remove('active');
+            } else {
+                player1InfoElement.classList.remove('active');
+                player2InfoElement.classList.add('active');
+            }
+        }
+
+        // Lempar dadu dengan animasi
+        function rollDice() {
+            diceElement.classList.add('rolling');
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const diceValue = Math.floor(Math.random() * 6) + 1;
+                    diceElement.textContent = diceValue;
+                    diceElement.classList.remove('rolling');
+                    resolve(diceValue);
+                }, 800);
+            });
+        }
+
+        // Pindahkan pemain
+        function movePlayer(playerIndex, diceValue) {
+            const player = config.players[playerIndex];
+            const newPosition = player.position + diceValue;
+            
+            if (newPosition > config.boardSize) {
+                updateGameLog(`${player.name} melempar ${diceValue}, melebihi kotak 100. Tetap di posisi ${player.position}.`);
+                return false;
+            }
+            
+            player.position = newPosition;
+            updateGameLog(`${player.name} melempar ${diceValue}, pindah ke kotak ${player.position}.`);
+            
+            // Cek tangga atau ular
+            if (snakesAndLadders.ladders[player.position]) {
+                const oldPosition = player.position;
+                player.position = snakesAndLadders.ladders[player.position];
+                updateGameLog(`${player.name} naik tangga dari kotak ${oldPosition} ke kotak ${player.position}! 🪜`);
+            } else if (snakesAndLadders.snakes[player.position]) {
+                const oldPosition = player.position;
+                player.position = snakesAndLadders.snakes[player.position];
+                updateGameLog(`${player.name} terkena ular dari kotak ${oldPosition} ke kotak ${player.position}! 🐍`);
+            }
+            
+            updatePlayerInfo();
+            updatePlayerPieces();
+            
+            // Cek kemenangan
+            if (player.position === config.boardSize) {
+                endGame(player);
+                return true;
+            }
+            
+            return false;
+        }
+
+        // Giliran pemain
+        async function playerTurn() {
+            if (!config.gameActive) return;
+            
+            rollDiceBtn.disabled = true;
+            autoPlayBtn.disabled = true;
+            
+            const diceValue = await rollDice();
+            const playerWon = movePlayer(config.currentPlayer, diceValue);
+            
+            if (!playerWon) {
+                config.currentPlayer = (config.currentPlayer + 1) % config.players.length;
+                updateActivePlayer();
+                
+                if (config.players[config.currentPlayer].isBot) {
+                    diceResultElement.textContent = `Giliran ${config.players[config.currentPlayer].name}. Bot sedang berpikir...`;
+                    setTimeout(botTurn, 1000);
+                } else {
+                    diceResultElement.textContent = `Giliran Anda! Lempar dadu.`;
+                    rollDiceBtn.disabled = false;
+                    autoPlayBtn.disabled = false;
+                    
+                    if (config.autoPlay) {
+                        setTimeout(playerTurn, config.autoPlaySpeed);
+                    }
+                }
+            }
+        }
+
+        // Giliran bot
+        async function botTurn() {
+            if (!config.gameActive) return;
+            
+            const diceValue = await rollDice();
+            const playerWon = movePlayer(config.currentPlayer, diceValue);
+            
+            if (!playerWon) {
+                config.currentPlayer = (config.currentPlayer + 1) % config.players.length;
+                updateActivePlayer();
+                
+                diceResultElement.textContent = `Giliran Anda! Lempar dadu.`;
+                rollDiceBtn.disabled = false;
+                autoPlayBtn.disabled = false;
+                
+                if (config.autoPlay) {
+                    setTimeout(playerTurn, config.autoPlaySpeed);
+                }
+            }
+        }
+
+        // Akhiri permainan
+        function endGame(winner) {
+            config.gameActive = false;
+            winnerText.textContent = `${winner.name} MENANG!`;
+            winMessage.style.display = 'block';
+            updateGameLog(`🎉 ${winner.name} MENANG PERMAINAN! 🎉`);
+            
+            rollDiceBtn.disabled = true;
+            autoPlayBtn.disabled = true;
+        }
+
+        // Update log permainan
+        function updateGameLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = {
+                time: timestamp,
+                message: message,
+                player: config.currentPlayer + 1
+            };
+            
+            config.logEntries.push(logEntry);
+            
+            const logElement = document.createElement('div');
+            logElement.classList.add('log-entry', `log-player-${logEntry.player}`);
+            logElement.innerHTML = `<strong>[${logEntry.time}]</strong> ${logEntry.message}`;
+            
+            logEntriesElement.prepend(logElement);
+            
+            if (config.logEntries.length > 20) {
+                config.logEntries.shift();
+                if (logEntriesElement.children.length > 20) {
+                    logEntriesElement.removeChild(logEntriesElement.lastChild);
+                }
+            }
+        }
+
+        // Toggle auto play
+        function toggleAutoPlay() {
+            config.autoPlay = !config.autoPlay;
+            
+            if (config.autoPlay) {
+                autoPlayBtn.textContent = '⏸️ Stop Auto Play';
+                diceResultElement.textContent = 'Auto Play aktif. Permainan berjalan otomatis.';
+                
+                if (!config.players[config.currentPlayer].isBot) {
+                    playerTurn();
+                }
+            } else {
+                autoPlayBtn.textContent = '⚡ Auto Play';
+                diceResultElement.textContent = 'Auto Play dihentikan.';
+            }
+        }
+
+        // Event listeners
+        rollDiceBtn.addEventListener('click', playerTurn);
+        resetGameBtn.addEventListener('click', () => {
+            if (confirm("Apakah Anda yakin ingin memulai ulang permainan?")) {
+                initGame();
+            }
+        });
+        autoPlayBtn.addEventListener('click', toggleAutoPlay);
+        playAgainBtn.addEventListener('click', () => {
+            winMessage.style.display = 'none';
+            initGame();
+        });
+
+        // Inisialisasi permainan
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>

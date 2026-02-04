@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe vs Bot</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            color: #FFD700;
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-btn:hover {
+            background-color: rgba(0, 0, 0, 0.5);
+            transform: translateX(-5px);
+        }
+        
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .left-panel, .right-panel {
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+        }
+        
+        .center-panel {
+            flex: 2;
+            min-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .game-info {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .player-info {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .player-info.active {
+            background-color: rgba(255, 215, 0, 0.2);
+            border: 2px solid #FFD700;
+            transform: scale(1.02);
+        }
+        
+        .player-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .player-symbol {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .player-type {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        
+        .player-moves {
+            font-size: 1.1rem;
+            color: #FFD700;
+        }
+        
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .mode-btn {
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .mode-btn.active {
+            background-color: #4CAF50;
+            transform: scale(1.05);
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #reset-btn {
+            background-color: #FF9800;
+        }
+        
+        #reset-btn:hover {
+            background-color: #F57C00;
+        }
+        
+        #hint-btn {
+            background-color: #2196F3;
+        }
+        
+        #hint-btn:hover {
+            background-color: #0b7dda;
+        }
+        
+        .game-status-container {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .game-status {
+            font-size: 1.3rem;
+            min-height: 30px;
+        }
+        
+        .bot-thinking {
+            font-style: italic;
+            color: #FFD700;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .game-board-container {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 15px;
+            width: 450px;
+            height: 450px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+        }
+        
+        .cell {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cell:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+        }
+        
+        .cell.x {
+            color: #FF5252;
+        }
+        
+        .cell.o {
+            color: #448AFF;
+        }
+        
+        .cell.winning {
+            background-color: rgba(255, 215, 0, 0.3);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+        
+        .move-order {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-log {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 15px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .log-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #FFD700;
+            font-size: 1.2rem;
+        }
+        
+        .log-entries {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .log-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.95rem;
+        }
+        
+        .log-player-1 {
+            color: #FF5252;
+        }
+        
+        .log-player-2 {
+            color: #448AFF;
+        }
+        
+        .rules {
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        
+        .rules h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+        }
+        
+        .rules ul {
+            padding-left: 20px;
+        }
+        
+        .rules li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .rules .highlight {
+            color: #FFD700;
+            font-weight: bold;
+        }
+        
+        .win-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.7);
+            z-index: 100;
+            display: none;
+            animation: fadeIn 0.5s ease;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .win-message h2 {
+            color: #FFD700;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .win-message p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .left-panel, .right-panel, .center-panel {
+                width: 100%;
+                max-width: 800px;
+            }
+            
+            .center-panel {
+                order: 1;
+            }
+            
+            .left-panel {
+                order: 2;
+            }
+            
+            .right-panel {
+                order: 3;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .game-board {
+                width: 90vw;
+                height: 90vw;
+                max-width: 400px;
+                max-height: 400px;
+            }
+            
+            .cell {
+                font-size: 4rem;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .back-btn {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin-bottom: 20px;
+            }
+            
+            .header-container {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-board {
+                gap: 10px;
+                padding: 15px;
+            }
+            
+            .cell {
+                font-size: 3rem;
+            }
+            
+            .move-order {
+                width: 20px;
+                height: 20px;
+                font-size: 0.8rem;
+                top: 5px;
+                right: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <button class="back-btn" onclick="goHome()">← Kembali ke Home</button>
+        <h1>TIC TAC TOE vs BOT</h1>
+        <p>3x Taro, Yang Terakhir Hilang - Lawan AI Bot!</p>
+    </div>
+    
+    <div class="main-container">
+        <!-- Panel Kiri: Info Pemain & Kontrol -->
+        <div class="left-panel">
+            <div class="game-info">
+                <div class="player-info active" id="player-x-info">
+                    <div class="player-name">Player X</div>
+                    <div class="player-type" id="player-x-type">(Anda)</div>
+                    <div class="player-symbol">X</div>
+                    <div class="player-moves">Simbol: <span id="player-x-moves">0/3</span></div>
+                </div>
+                
+                <div class="player-info" id="player-o-info">
+                    <div class="player-name">Player O</div>
+                    <div class="player-type" id="player-o-type">(AI Bot)</div>
+                    <div class="player-symbol">O</div>
+                    <div class="player-moves">Simbol: <span id="player-o-moves">0/3</span></div>
+                </div>
+            </div>
+            
+            <div class="mode-selector">
+                <button class="mode-btn active" id="mode-vs-bot">VS Bot</button>
+                <button class="mode-btn" id="mode-2-players">2 Pemain</button>
+            </div>
+            
+            <div class="controls">
+                <button id="reset-btn">🔄 Mulai Ulang</button>
+                <button id="undo-btn" disabled>↩️ Undo</button>
+                <button id="hint-btn">💡 Hint</button>
+            </div>
+            
+            <div class="rules">
+                <h3>Aturan Permainan:</h3>
+                <ul>
+                    <li>Setiap player hanya boleh memiliki <span class="highlight">maksimal 3 simbol</span> di papan</li>
+                    <li>Jika sudah memiliki 3 simbol dan menempatkan simbol ke-4, maka <span class="highlight">simbol pertama akan hilang</span></li>
+                    <li>Pemenang adalah yang pertama memiliki <span class="highlight">3 simbol berurutan</span></li>
+                    <li><span class="highlight">Tidak ada hasil seri</span> karena papan tidak akan pernah penuh</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Panel Tengah: Status & Papan Permainan -->
+        <div class="center-panel">
+            <div class="game-status-container">
+                <div class="game-status" id="game-status">
+                    Giliran: <span id="current-player">X (Anda)</span>
+                </div>
+            </div>
+            
+            <div class="game-board-container">
+                <div class="game-board" id="game-board">
+                    <!-- Sel-sel akan di-generate oleh JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel Kanan: Log Permainan -->
+        <div class="right-panel">
+            <div class="game-log">
+                <div class="log-title">📜 Riwayat Pergerakan:</div>
+                <div class="log-entries" id="log-entries"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="win-message" id="win-message">
+        <h2 id="winner-text"></h2>
+        <p id="win-details"></p>
+        <button id="play-again-btn">🔄 Main Lagi</button>
+        <button onclick="goHome()" style="margin-top: 10px; background-color: #666;">🏠 Kembali ke Home</button>
+    </div>
+    
+    <script>
+        // Konfigurasi permainan
+        const gameState = {
+            board: Array(9).fill(''),
+            currentPlayer: 'X',
+            gameActive: true,
+            playerMoves: {
+                'X': [],
+                'O': []
+            },
+            moveHistory: [],
+            maxMovesPerPlayer: 3,
+            gameMode: 'vs-bot',
+            botDifficulty: 'medium'
+        };
+
+        // Kombinasi kemenangan
+        const winningCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+
+        // Elemen DOM
+        const gameBoardElement = document.getElementById('game-board');
+        const gameStatusElement = document.getElementById('game-status');
+        const currentPlayerElement = document.getElementById('current-player');
+        const playerXMovesElement = document.getElementById('player-x-moves');
+        const playerOMovesElement = document.getElementById('player-o-moves');
+        const playerXInfoElement = document.getElementById('player-x-info');
+        const playerOInfoElement = document.getElementById('player-o-info');
+        const playerXTypeElement = document.getElementById('player-x-type');
+        const playerOTypeElement = document.getElementById('player-o-type');
+        const resetBtn = document.getElementById('reset-btn');
+        const undoBtn = document.getElementById('undo-btn');
+        const hintBtn = document.getElementById('hint-btn');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        const winMessageElement = document.getElementById('win-message');
+        const winnerTextElement = document.getElementById('winner-text');
+        const winDetailsElement = document.getElementById('win-details');
+        const logEntriesElement = document.getElementById('log-entries');
+        const modeVsBotBtn = document.getElementById('mode-vs-bot');
+        const mode2PlayersBtn = document.getElementById('mode-2-players');
+
+        // Fungsi kembali ke home
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        // Inisialisasi permainan
+        function initGame() {
+            gameState.board = Array(9).fill('');
+            gameState.currentPlayer = 'X';
+            gameState.gameActive = true;
+            gameState.playerMoves = { 'X': [], 'O': [] };
+            gameState.moveHistory = [];
+            
+            updateBoard();
+            updateGameStatus();
+            updatePlayerInfo();
+            updateMoveHistory();
+            
+            undoBtn.disabled = true;
+            winMessageElement.style.display = 'none';
+            
+            addToMoveHistory("🎮 Permainan dimulai! Player X (Anda) memulai.");
+        }
+
+        // Generate papan permainan
+        function updateBoard() {
+            gameBoardElement.innerHTML = '';
+            
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                
+                if (gameState.board[i]) {
+                    cell.textContent = gameState.board[i];
+                    cell.classList.add(gameState.board[i].toLowerCase());
+                    cell.style.cursor = 'default';
+                    cell.onclick = null;
+                } else {
+                    if (gameState.gameActive && 
+                        (gameState.currentPlayer === 'X' || gameState.gameMode === '2-players')) {
+                        cell.onclick = () => handleCellClick(i);
+                        cell.style.cursor = 'pointer';
+                    } else {
+                        cell.style.cursor = 'default';
+                        cell.onclick = null;
+                    }
+                }
+                
+                const moveOrder = getMoveOrder(i);
+                if (moveOrder > 0) {
+                    const orderElement = document.createElement('div');
+                    orderElement.className = 'move-order';
+                    orderElement.textContent = moveOrder;
+                    cell.appendChild(orderElement);
+                }
+                
+                gameBoardElement.appendChild(cell);
+            }
+        }
+
+        // Dapatkan urutan penempatan simbol
+        function getMoveOrder(cellIndex) {
+            for (const player of ['X', 'O']) {
+                const index = gameState.playerMoves[player].indexOf(cellIndex);
+                if (index !== -1) {
+                    return index + 1;
+                }
+            }
+            return 0;
+        }
+
+        // Handle klik sel
+        function handleCellClick(cellIndex) {
+            if (!gameState.gameActive) return;
+            if (gameState.board[cellIndex] !== '') return;
+            
+            makeMove(cellIndex);
+            
+            if (gameState.gameActive && gameState.gameMode === 'vs-bot' && gameState.currentPlayer === 'O') {
+                setTimeout(botMove, 800);
+            }
+        }
+
+        // Lakukan pergerakan
+        function makeMove(cellIndex) {
+            const player = gameState.currentPlayer;
+            
+            gameState.playerMoves[player].push(parseInt(cellIndex));
+            
+            if (gameState.playerMoves[player].length > gameState.maxMovesPerPlayer) {
+                const oldestMove = gameState.playerMoves[player].shift();
+                gameState.board[oldestMove] = '';
+                addToMoveHistory(`Player ${player} menghilangkan simbol dari sel ${oldestMove + 1}`);
+            }
+            
+            gameState.board[cellIndex] = player;
+            
+            const playerName = (player === 'X') ? 'Anda (X)' : (gameState.gameMode === 'vs-bot' ? 'Bot (O)' : 'Player O');
+            addToMoveHistory(`${playerName} menempatkan simbol di sel ${cellIndex + 1}`);
+            
+            if (checkWin(player)) {
+                endGame(player);
+                return;
+            }
+            
+            gameState.currentPlayer = player === 'X' ? 'O' : 'X';
+            
+            updateBoard();
+            updateGameStatus();
+            updatePlayerInfo();
+            updateMoveHistory();
+            
+            undoBtn.disabled = false;
+        }
+
+        // Bot melakukan pergerakan
+        function botMove() {
+            if (!gameState.gameActive || gameState.currentPlayer !== 'O') return;
+            
+            gameStatusElement.innerHTML = `<span class="bot-thinking">🤖 Bot sedang berpikir...</span>`;
+            
+            setTimeout(() => {
+                let botMoveIndex;
+                
+                switch (gameState.botDifficulty) {
+                    case 'easy':
+                        botMoveIndex = getRandomMove();
+                        break;
+                    case 'medium':
+                        botMoveIndex = getMediumBotMove();
+                        break;
+                    case 'hard':
+                        botMoveIndex = getHardBotMove();
+                        break;
+                    default:
+                        botMoveIndex = getMediumBotMove();
+                }
+                
+                if (botMoveIndex !== -1) {
+                    makeMove(botMoveIndex);
+                }
+            }, 500);
+        }
+
+        // Bot mudah: pilih langkah acak
+        function getRandomMove() {
+            const emptyCells = gameState.board
+                .map((cell, index) => cell === '' ? index : -1)
+                .filter(index => index !== -1);
+            
+            if (emptyCells.length > 0) {
+                return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            }
+            return -1;
+        }
+
+        // Bot sedang: strategi sederhana
+        function getMediumBotMove() {
+            const botPlayer = 'O';
+            const humanPlayer = 'X';
+            
+            let winningMove = findWinningMove(botPlayer);
+            if (winningMove !== -1) return winningMove;
+            
+            let blockingMove = findWinningMove(humanPlayer);
+            if (blockingMove !== -1) return blockingMove;
+            
+            if (gameState.board[4] === '') return 4;
+            
+            const corners = [0, 2, 6, 8];
+            const emptyCorners = corners.filter(index => gameState.board[index] === '');
+            if (emptyCorners.length > 0) {
+                return emptyCorners[Math.floor(Math.random() * emptyCorners.length)];
+            }
+            
+            return getRandomMove();
+        }
+
+        // Bot sulit: minimax (disederhanakan)
+        function getHardBotMove() {
+            return getMediumBotMove();
+        }
+
+        // Cek langkah kemenangan
+        function findWinningMove(player) {
+            for (let i = 0; i < 9; i++) {
+                if (gameState.board[i] === '') {
+                    gameState.board[i] = player;
+                    const isWin = checkWinSimulation(player);
+                    gameState.board[i] = '';
+                    if (isWin) return i;
+                }
+            }
+            return -1;
+        }
+
+        // Cek kemenangan (simulasi)
+        function checkWinSimulation(player) {
+            for (const combination of winningCombinations) {
+                if (
+                    gameState.board[combination[0]] === player &&
+                    gameState.board[combination[1]] === player &&
+                    gameState.board[combination[2]] === player
+                ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Cek apakah pemain menang
+        function checkWin(player) {
+            for (const combination of winningCombinations) {
+                if (
+                    gameState.board[combination[0]] === player &&
+                    gameState.board[combination[1]] === player &&
+                    gameState.board[combination[2]] === player
+                ) {
+                    combination.forEach(index => {
+                        const cell = document.querySelector(`.cell[data-index="${index}"]`);
+                        if (cell) cell.classList.add('winning');
+                    });
+                    
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Akhiri permainan
+        function endGame(winner) {
+            gameState.gameActive = false;
+            
+            const winnerName = (winner === 'X') ? 'Anda (X)' : (gameState.gameMode === 'vs-bot' ? 'Bot (O)' : 'Player O');
+            
+            winnerTextElement.textContent = `${winnerName} MENANG!`;
+            winDetailsElement.textContent = `${winnerName} berhasil membuat 3 simbol berurutan!`;
+            winMessageElement.style.display = 'block';
+            
+            addToMoveHistory(`🎉 ${winnerName} MENANG PERMAINAN! 🎉`);
+        }
+
+        // Update status permainan
+        function updateGameStatus() {
+            if (gameState.gameActive) {
+                if (gameState.currentPlayer === 'X') {
+                    currentPlayerElement.textContent = 'X (Anda)';
+                    currentPlayerElement.style.color = '#FF5252';
+                    gameStatusElement.innerHTML = `Giliran: <span id="current-player">${gameState.currentPlayer} (Anda)</span>`;
+                } else {
+                    if (gameState.gameMode === 'vs-bot') {
+                        currentPlayerElement.textContent = 'O (Bot)';
+                        currentPlayerElement.style.color = '#448AFF';
+                        gameStatusElement.innerHTML = `Giliran: <span id="current-player">${gameState.currentPlayer} (Bot)</span>`;
+                    } else {
+                        currentPlayerElement.textContent = 'O (Player 2)';
+                        currentPlayerElement.style.color = '#448AFF';
+                        gameStatusElement.innerHTML = `Giliran: <span id="current-player">${gameState.currentPlayer} (Player 2)</span>`;
+                    }
+                }
+            }
+        }
+
+        // Update info pemain
+        function updatePlayerInfo() {
+            playerXMovesElement.textContent = `${gameState.playerMoves['X'].length}/${gameState.maxMovesPerPlayer}`;
+            playerOMovesElement.textContent = `${gameState.playerMoves['O'].length}/${gameState.maxMovesPerPlayer}`;
+            
+            if (gameState.currentPlayer === 'X') {
+                playerXInfoElement.classList.add('active');
+                playerOInfoElement.classList.remove('active');
+            } else {
+                playerXInfoElement.classList.remove('active');
+                playerOInfoElement.classList.add('active');
+            }
+        }
+
+        // Tambahkan entri ke riwayat
+        function addToMoveHistory(text) {
+            gameState.moveHistory.push({
+                text: text,
+                time: new Date().toLocaleTimeString()
+            });
+        }
+
+        // Update tampilan riwayat
+        function updateMoveHistory() {
+            logEntriesElement.innerHTML = '';
+            
+            const recentMoves = gameState.moveHistory.slice(-15);
+            
+            recentMoves.forEach(move => {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                const playerClass = move.text.includes('(X)') ? 'log-player-1' : 
+                                  move.text.includes('(O)') ? 'log-player-2' : '';
+                if (playerClass) entry.classList.add(playerClass);
+                entry.innerHTML = `<strong>[${move.time}]</strong> ${move.text}`;
+                logEntriesElement.appendChild(entry);
+            });
+            
+            logEntriesElement.scrollTop = logEntriesElement.scrollHeight;
+        }
+
+        // Fungsi undo
+        function undoMove() {
+            if (gameState.moveHistory.length === 0 || !gameState.gameActive) return;
+            
+            if (gameState.gameMode === 'vs-bot' && gameState.currentPlayer === 'O') {
+                alert("Tidak bisa undo saat giliran bot!");
+                return;
+            }
+            
+            const lastMove = gameState.moveHistory.pop();
+            const lastPlayer = gameState.currentPlayer === 'X' ? 'O' : 'X';
+            
+            if (gameState.playerMoves[lastPlayer].length > 0) {
+                const lastMoveIndex = gameState.playerMoves[lastPlayer].pop();
+                gameState.board[lastMoveIndex] = '';
+            }
+            
+            gameState.currentPlayer = lastPlayer;
+            
+            updateBoard();
+            updateGameStatus();
+            updatePlayerInfo();
+            updateMoveHistory();
+            
+            undoBtn.disabled = gameState.moveHistory.length === 0;
+        }
+
+        // Berikan hint
+        function giveHint() {
+            if (!gameState.gameActive || gameState.currentPlayer !== 'X') {
+                alert("Hint hanya tersedia saat giliran Anda!");
+                return;
+            }
+            
+            const player = 'X';
+            let bestMove = findWinningMove(player);
+            
+            if (bestMove === -1) {
+                const opponent = player === 'X' ? 'O' : 'X';
+                bestMove = findWinningMove(opponent);
+            }
+            
+            if (bestMove === -1 && gameState.board[4] === '') {
+                bestMove = 4;
+            }
+            
+            if (bestMove === -1) {
+                const emptyCells = gameState.board
+                    .map((cell, index) => cell === '' ? index : -1)
+                    .filter(index => index !== -1);
+                
+                if (emptyCells.length > 0) {
+                    bestMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                }
+            }
+            
+            if (bestMove !== -1) {
+                const cell = document.querySelector(`.cell[data-index="${bestMove}"]`);
+                cell.style.backgroundColor = 'rgba(255, 215, 0, 0.5)';
+                cell.style.transform = 'scale(1.1)';
+                
+                setTimeout(() => {
+                    cell.style.backgroundColor = '';
+                    cell.style.transform = '';
+                }, 1000);
+                
+                addToMoveHistory(`💡 Hint: Anda sebaiknya menempatkan simbol di sel ${bestMove + 1}`);
+                updateMoveHistory();
+            }
+        }
+
+        // Ganti mode permainan
+        function changeGameMode(mode) {
+            gameState.gameMode = mode;
+            
+            if (mode === 'vs-bot') {
+                modeVsBotBtn.classList.add('active');
+                mode2PlayersBtn.classList.remove('active');
+                playerXTypeElement.textContent = '(Anda)';
+                playerOTypeElement.textContent = '(AI Bot)';
+            } else {
+                modeVsBotBtn.classList.remove('active');
+                mode2PlayersBtn.classList.add('active');
+                playerXTypeElement.textContent = '(Player 1)';
+                playerOTypeElement.textContent = '(Player 2)';
+            }
+            
+            initGame();
+        }
+
+        // Event listeners
+        resetBtn.addEventListener('click', initGame);
+        undoBtn.addEventListener('click', undoMove);
+        hintBtn.addEventListener('click', giveHint);
+        playAgainBtn.addEventListener('click', () => {
+            winMessageElement.style.display = 'none';
+            initGame();
+        });
+        modeVsBotBtn.addEventListener('click', () => changeGameMode('vs-bot'));
+        mode2PlayersBtn.addEventListener('click', () => changeGameMode('2-players'));
+
+        // Inisialisasi
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
